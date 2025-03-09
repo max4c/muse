@@ -8,7 +8,8 @@
     "webpack:dev": "webpack --watch",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "package": "webpack && electron-builder build --win --mac --linux",
-    "test": "jest"
+    "test": "JEST_SILENT_REPORTER_DOTS=true JEST_SILENT_REPORTER_SHOW_WARNINGS=false jest --silent",
+    "test-file": "jest --testMatch"
   },
   "repository": {
     "type": "git",

@@ -5,19 +5,16 @@ import MainContent from './MainContent';
 const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   
-  // Demo files for initial testing
-  const demoFiles = [
-    { id: 1, name: 'Welcome.md', path: '/Welcome.md' },
-    { id: 2, name: 'Getting Started.md', path: '/Getting Started.md' },
-    { id: 3, name: 'Features.md', path: '/Features.md' },
-  ];
+  // Handle file selection
+  const handleFileSelect = (file) => {
+    setSelectedFile(file);
+  };
 
   return (
     <div className="app-container">
       <Sidebar 
-        files={demoFiles} 
         selectedFile={selectedFile}
-        onFileSelect={setSelectedFile} 
+        onFileSelect={handleFileSelect} 
       />
       <MainContent selectedFile={selectedFile} />
     </div>

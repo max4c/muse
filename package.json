@@ -1,0 +1,36 @@
+{
+  "name": "muse",
+  "version": "1.0.0",
+  "main": "index.js",
+"scripts": {
+  "start": "electron .",
+  "rebuild": "electron-rebuild -f -w better-sqlite3",
+  "package": "electron-builder build --win --mac --linux"
+}
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/max4c/muse.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/max4c/muse/issues"
+  },
+  "homepage": "https://github.com/max4c/muse#readme",
+  "description": "",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "marked": "^15.0.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron-rebuild": "^3.2.9",
+    "wait-on": "^8.0.2"
+  }
+}

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MarkdownBlock from './MarkdownBlock';
-import './MainContent.css';
+import { useTheme } from '../ThemeContext';
 
 const MainContent = ({ selectedFile }) => {
   const [blocks, setBlocks] = useState([{ id: 'block-0', content: '', focused: false }]);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedBlockId, setFocusedBlockId] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
+  const { theme } = useTheme();
   
   // Ref for the save timer
   const saveTimerRef = useRef(null);
@@ -250,103 +251,83 @@ const MainContent = ({ selectedFile }) => {
       setFocusedBlockId(previousBlockId);
       setContentChanged(true);
       
-      // The cursor should go to the end of the previous block's content
+      // Force focus to previous block (requires a slight delay)
       setTimeout(() => {
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-          if (textarea.closest(`[data-block-id="${previousBlockId}"]`)) {
-            textarea.focus();
-            textarea.setSelectionRange(previousBlockContent.length, previousBlockContent.length);
+        const prevBlockElement = document.getElementById(previousBlockId);
+        if (prevBlockElement) {
+          const textareaElement = prevBlockElement.querySelector('textarea');
+          if (textareaElement) {
+            textareaElement.focus();
+            // Set cursor to end of text
+            const textLength = previousBlockContent.length;
+            textareaElement.setSelectionRange(textLength, textLength);
           }
-        });
+        }
       }, 0);
     }
   };
   
   // Get placeholder content when no file is selected
   const getPlaceholderContent = () => {
-    if (!selectedFile) {
-      return 'Select a file from the sidebar to view its contents.';
-    }
-    return '';
+    return (
+      <div className="text-center mt-24" style={{ color: 'var(--color-gray-500)' }}>
+        <p className="text-lg mb-2">Select a file from the sidebar to edit</p>
+        <p className="text-sm">or create a new file</p>
+      </div>
+    );
   };
-
-  // Get save status indicator text
+  
+  // Get save status text/color
   const getSaveStatusText = () => {
     switch (saveStatus) {
-      case 'saving':
-        return 'Saving...';
       case 'saved':
-        return 'All changes saved';
+        return <span style={{ color: 'var(--color-success)' }}>Saved</span>;
+      case 'saving':
+        return <span style={{ color: 'var(--color-info)' }}>Saving...</span>;
       case 'error':
-        return 'Error saving';
+        return <span style={{ color: 'var(--color-error)' }}>Error saving</span>;
       default:
-        return '';
+        return null;
     }
   };
-
+  
   return (
-    <div className="main-content">
+    <div 
+      className="flex-1 h-full overflow-y-auto p-5 flex flex-col"
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       {selectedFile ? (
         <>
-          <div className="toolbar">
-            <h2>{selectedFile.name}</h2>
-            <div className="toolbar-actions">
-              {isLoading ? (
-                <span className="loading-indicator">Loading...</span>
-              ) : (
-                <span className={`save-status ${saveStatus}`}>{getSaveStatusText()}</span>
-              )}
-            </div>
+          <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--color-gray-200)' }}>
+            <h2 className="text-xl font-medium truncate">
+              {selectedFile.name}
+            </h2>
+            <div className="text-sm">{getSaveStatusText()}</div>
           </div>
           
-          <div className="blocks-container">
-            {blocks.map(block => (
-              <div key={block.id} data-block-id={block.id}>
-                <MarkdownBlock
-                  id={block.id}
-                  content={block.content}
-                  onChange={handleBlockChange}
-                  onFocus={handleBlockFocus}
-                  onBlur={handleBlockBlur}
-                  onKeyDown={handleBlockKeyDown}
-                  isFocused={block.focused}
-                />
+          {isLoading ? (
+            <p style={{ color: 'var(--color-gray-500)' }}>Loading content...</p>
+          ) : (
+            <div className="flex-1 max-w-3xl mx-auto w-full">
+              <div className="prose-like-container">
+                {blocks.map((block) => (
+                  <MarkdownBlock
+                    key={block.id}
+                    id={block.id}
+                    content={block.content}
+                    focused={block.focused}
+                    onChange={handleBlockChange}
+                    onFocus={handleBlockFocus}
+                    onBlur={handleBlockBlur}
+                    onKeyDown={handleBlockKeyDown}
+                  />
+                ))}
               </div>
-            ))}
-            
-            {/* Add an empty block at the end that gets focused when clicked */}
-            <div 
-              className="empty-block-placeholder"
-              onClick={() => {
-                // Only add a new block if the last block isn't already empty
-                const lastBlock = blocks[blocks.length - 1];
-                if (lastBlock && lastBlock.content.trim() !== '') {
-                  const newBlockId = `block-${Date.now()}`;
-                  setBlocks(prevBlocks => [
-                    ...prevBlocks, 
-                    { id: newBlockId, content: '', focused: true }
-                  ]);
-                  setFocusedBlockId(newBlockId);
-                  setContentChanged(true);
-                } else if (lastBlock) {
-                  // Focus the last block if it's empty
-                  setBlocks(prevBlocks => prevBlocks.map((block, index) => ({
-                    ...block,
-                    focused: index === prevBlocks.length - 1
-                  })));
-                  setFocusedBlockId(lastBlock.id);
-                }
-              }}
-            >
-              {/* This element is invisible but clickable */}
             </div>
-          </div>
+          )}
         </>
       ) : (
-        <div className="placeholder">
-          <p>{getPlaceholderContent()}</p>
-        </div>
+        getPlaceholderContent()
       )}
     </div>
   );

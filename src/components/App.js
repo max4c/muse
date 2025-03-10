@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
+import ThemeProvider from '../ThemeContext';
 
 const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,13 +12,15 @@ const App = () => {
   };
 
   return (
-    <div className="app-container">
-      <Sidebar 
-        selectedFile={selectedFile}
-        onFileSelect={handleFileSelect} 
-      />
-      <MainContent selectedFile={selectedFile} />
-    </div>
+    <ThemeProvider>
+      <div className="flex w-full h-full">
+        <Sidebar 
+          selectedFile={selectedFile}
+          onFileSelect={handleFileSelect} 
+        />
+        <MainContent selectedFile={selectedFile} />
+      </div>
+    </ThemeProvider>
   );
 };
 

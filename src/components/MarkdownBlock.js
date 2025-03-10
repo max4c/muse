@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { marked } from 'marked';
-import './MarkdownBlock.css';
+import { useTheme } from '../ThemeContext';
 
 const MarkdownBlock = ({ 
   content, 
@@ -8,17 +8,18 @@ const MarkdownBlock = ({
   onFocus,
   onBlur,
   onKeyDown,
-  isFocused,
+  focused,
   id
 }) => {
   const editorRef = useRef(null);
+  const { theme } = useTheme();
   
-  // Focus editor when isFocused changes to true
+  // Focus editor when focused changes to true
   useEffect(() => {
-    if (isFocused && editorRef.current) {
+    if (focused && editorRef.current) {
       editorRef.current.focus();
     }
-  }, [isFocused]);
+  }, [focused]);
 
   // Configure marked options for better markdown rendering
   useEffect(() => {
@@ -35,7 +36,7 @@ const MarkdownBlock = ({
   const renderMarkdown = (markdownContent) => {
     // Handle empty or undefined content
     if (!markdownContent || markdownContent.trim() === '') {
-      return '<p class="empty-paragraph">&nbsp;</p>';
+      return '<p class="empty-placeholder">&nbsp;</p>';
     }
     
     try {
@@ -67,23 +68,30 @@ const MarkdownBlock = ({
     onBlur(id);
   };
 
-  // Debug rendering
-  console.log(`Rendering block ${id}, content: "${content}", isFocused: ${isFocused}`);
-
   return (
-    <div className={`markdown-block ${isFocused ? 'focused' : ''}`}>
-      {/* Block controls (visible on hover) */}
-      <div className="block-controls">
-        <div className="block-drag-handle" draggable={true}>
-          <span></span>
-          <span></span>
+    <div id={id} className={`group relative ${focused ? 'z-10' : ''}`}>
+      {/* Block controls (only visible on hover) */}
+      <div 
+        className={`absolute -left-6 top-1/2 transform -translate-y-1/2 opacity-0 ${
+          focused ? 'group-hover:opacity-100' : ''
+        } transition-opacity flex items-center`}
+      >
+        <div className="flex space-x-0.5 px-1 cursor-move">
+          <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--color-gray-400)' }}></div>
+          <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--color-gray-400)' }}></div>
         </div>
       </div>
       
-      {isFocused ? (
+      {focused ? (
         <textarea
           ref={editorRef}
-          className="block-editor"
+          className="w-full px-3 py-0.5 focus:outline-none resize-none"
+          style={{ 
+            minHeight: content ? 'auto' : '1.5rem', 
+            height: content ? `${Math.max(content.split('\n').length, 1) * 1.5}rem` : '1.5rem',
+            backgroundColor: 'transparent',
+            color: 'var(--color-foreground)',
+          }}
           value={content}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -94,9 +102,18 @@ const MarkdownBlock = ({
         />
       ) : (
         <div 
-          className="block-viewer"
+          className={`px-3 py-0.5 cursor-text markdown-viewer ${
+            !content || content.trim() === '' ? 'h-6 italic' : ''
+          }`}
+          style={{
+            color: !content || content.trim() === '' ? 'var(--color-gray-400)' : 'var(--color-foreground)'
+          }}
           onClick={handleFocus}
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          dangerouslySetInnerHTML={{ 
+            __html: !content || content.trim() === '' 
+              ? 'Click to edit...' 
+              : renderMarkdown(content) 
+          }}
         />
       )}
     </div>

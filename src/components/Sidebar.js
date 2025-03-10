@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import FileNameDialog from './FileNameDialog';
+import Settings from './Settings';
+import { useTheme } from '../ThemeContext';
 
 const Sidebar = ({ selectedFile, onFileSelect }) => {
   const [files, setFiles] = useState([]);
   const [currentDirectory, setCurrentDirectory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { theme } = useTheme();
   
   // Load files when component mounts
   useEffect(() => {
@@ -95,39 +99,90 @@ const Sidebar = ({ selectedFile, onFileSelect }) => {
     });
   };
 
+  // Toggle settings panel
+  const toggleSettings = () => {
+    setIsSettingsOpen(!isSettingsOpen);
+  };
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <h2>Files</h2>
-        <button className="new-file-btn" onClick={openNewFileDialog}>New File</button>
-      </div>
-      
-      <div className="current-directory">
-        <p title={currentDirectory}>{currentDirectory}</p>
-      </div>
-      
-      {isLoading ? (
-        <p>Loading files...</p>
+    <div 
+      className="w-64 h-full overflow-y-auto p-3 flex flex-col" 
+      style={{ 
+        backgroundColor: 'var(--color-sidebar-bg)',
+        borderRight: '1px solid var(--color-sidebar-border)'
+      }}
+    >
+      {isSettingsOpen ? (
+        <Settings onClose={() => setIsSettingsOpen(false)} />
       ) : (
         <>
-          {files.length === 0 ? (
-            <p>No markdown files found.</p>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-lg font-medium">Files</h2>
+            <button 
+              className="py-1 px-3 text-white text-sm rounded transition-colors"
+              style={{ 
+                backgroundColor: 'var(--color-primary)',
+                ':hover': { backgroundColor: 'var(--color-primary-hover)' }
+              }}
+              onClick={openNewFileDialog}
+            >
+              New File
+            </button>
+          </div>
+          
+          <div className="text-xs mb-3 p-2 rounded break-all" style={{ 
+            backgroundColor: 'var(--color-gray-100)', 
+            color: 'var(--color-gray-600)'
+          }}>
+            <p title={currentDirectory}>{currentDirectory}</p>
+          </div>
+          
+          {isLoading ? (
+            <p style={{ color: 'var(--color-gray-500)' }}>Loading files...</p>
           ) : (
-            <ul className="file-list">
-              {files.map(file => (
-                <li 
-                  key={file.path} 
-                  className={`file-item ${selectedFile?.path === file.path ? 'active' : ''}`}
-                  onClick={() => onFileSelect(file)}
-                >
-                  <div className="file-name">{file.name}</div>
-                  <div className="file-meta">
-                    <span className="file-date">{formatDate(file.lastModified)}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              {files.length === 0 ? (
+                <p style={{ color: 'var(--color-gray-500)' }}>No markdown files found.</p>
+              ) : (
+                <ul className="list-none overflow-y-auto flex-1">
+                  {files.map(file => (
+                    <li 
+                      key={file.path} 
+                      className="p-2 mb-0.5 cursor-pointer rounded flex flex-col" 
+                      style={{
+                        backgroundColor: selectedFile?.path === file.path 
+                          ? 'var(--color-sidebar-item-active)' 
+                          : 'transparent',
+                        ':hover': { backgroundColor: 'var(--color-sidebar-item-hover)' }
+                      }}
+                      onClick={() => onFileSelect(file)}
+                    >
+                      <div className={`break-all ${selectedFile?.path === file.path ? 'font-medium' : 'font-normal'}`}>
+                        {file.name}
+                      </div>
+                      <div className="text-xs italic" style={{ color: 'var(--color-gray-500)' }}>
+                        {formatDate(file.lastModified)}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
+          
+          {/* Add settings button at the bottom */}
+          <div className="mt-auto pt-3" style={{ borderTop: '1px solid var(--color-sidebar-border)' }}>
+            <button 
+              className="w-full py-2 text-sm rounded transition-colors"
+              style={{ 
+                color: 'var(--color-gray-700)',
+                ':hover': { backgroundColor: 'var(--color-sidebar-item-hover)' }
+              }}
+              onClick={toggleSettings}
+            >
+              Settings
+            </button>
+          </div>
         </>
       )}
       

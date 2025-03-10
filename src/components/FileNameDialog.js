@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './FileNameDialog.css';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
 
 const FileNameDialog = ({ isOpen, onClose, onSubmit }) => {
   const [fileName, setFileName] = useState('');
   const inputRef = useRef(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Focus the input when dialog opens
@@ -28,26 +29,56 @@ const FileNameDialog = ({ isOpen, onClose, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="file-name-dialog-backdrop">
-      <div className="file-name-dialog">
-        <h3>Create New File</h3>
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{
+      backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    }}>
+      <div className="rounded-lg p-6 w-96 max-w-full shadow-xl" style={{
+        backgroundColor: 'var(--color-background)',
+        color: 'var(--color-foreground)',
+        border: '1px solid var(--color-gray-300)'
+      }}>
+        <h3 className="text-xl font-semibold mb-4">Create New File</h3>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="fileName">File Name:</label>
+          <div className="mb-4">
+            <label htmlFor="fileName" className="block text-sm font-medium mb-1" style={{
+              color: 'var(--color-gray-600)'
+            }}>
+              File Name:
+            </label>
             <input
               id="fileName"
               ref={inputRef}
               type="text"
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
-              placeholder="Enter file name (will be appended with .md if needed)"
+              className="w-full px-3 py-2 rounded-md focus:outline-none"
+              style={{
+                backgroundColor: theme === 'dark' ? 'var(--color-gray-50)' : 'white',
+                color: 'var(--color-foreground)',
+                border: '1px solid var(--color-gray-300)'
+              }}
             />
           </div>
-          <div className="dialog-buttons">
-            <button type="button" className="cancel-button" onClick={handleCancel}>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-4 py-2 rounded-md"
+              style={{
+                backgroundColor: 'var(--color-gray-200)',
+                color: 'var(--color-gray-800)'
+              }}
+            >
               Cancel
             </button>
-            <button type="submit" className="submit-button" disabled={!fileName.trim()}>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-md"
+              style={{
+                backgroundColor: 'var(--color-primary)',
+                color: 'white'
+              }}
+            >
               Create
             </button>
           </div>
